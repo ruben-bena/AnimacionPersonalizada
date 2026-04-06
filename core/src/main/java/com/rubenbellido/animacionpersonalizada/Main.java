@@ -19,6 +19,11 @@ public class Main implements ApplicationListener {
     Animation<TextureRegion> backAnimation;
     Texture spritesheet;
     SpriteBatch spriteBatch;
+    float x = 0;
+    float y = 0;
+    float speed = 200;
+    float dirX = 0;
+    float dirY = 0;
 
     // A variable for tracking elapsed time for the animation
     float stateTime;
@@ -73,14 +78,9 @@ public class Main implements ApplicationListener {
 
     @Override
     public void render() {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear screen
-        stateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
-
-        // Get current frame of animation for the current stateTime
-        TextureRegion currentFrame = backAnimation.getKeyFrame(stateTime, true);
-        spriteBatch.begin();
-        spriteBatch.draw(currentFrame, 50, 50); // Draw current frame at (50, 50)
-        spriteBatch.end();
+        input();
+        logic();
+        draw();
     }
 
     @Override
@@ -97,5 +97,43 @@ public class Main implements ApplicationListener {
     public void dispose() { // SpriteBatches and Textures must always be disposed
         spriteBatch.dispose();
         spritesheet.dispose();
+    }
+
+    public void input() {
+        dirX = 0;
+        dirY = 0;
+
+        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.LEFT)) {
+            dirX = -1;
+        }
+        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT)) {
+            dirX = 1;
+        }
+        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.UP)) {
+            dirY = 1;
+        }
+        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.DOWN)) {
+            dirY = -1;
+        }
+    }
+
+    public void logic() {
+        // Obtenemos el tiempo que ha pasado desde el último frame
+        float deltaTime = Gdx.graphics.getDeltaTime();
+
+        // Actualizamos la posición: Posición + (Dirección * Velocidad * Tiempo)
+        x += dirX * speed * deltaTime;
+        y += dirY * speed * deltaTime;
+    }
+
+    public void draw() {
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear screen
+        stateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
+
+        // Get current frame of animation for the current stateTime
+        TextureRegion currentFrame = backAnimation.getKeyFrame(stateTime, true);
+        spriteBatch.begin();
+        spriteBatch.draw(currentFrame, x, y);
+        spriteBatch.end();
     }
 }
