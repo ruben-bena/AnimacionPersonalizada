@@ -10,21 +10,22 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Main implements ApplicationListener {
 
-    // Constant rows and columns of the sprite sheet
+    // Animaciones y sprites
     private static final int FRAME_COLS = 12, FRAME_ROWS = 1;
-
-    // Objects used
     Animation<TextureRegion> idleAnimation;
     Animation<TextureRegion> walkAnimation;
     Animation<TextureRegion> backAnimation;
     Texture spritesheet;
     SpriteBatch spriteBatch;
     TextureRegion currentFrame;
+
+    // Control de movimiento
     float x = 0;
     float y = 0;
-    float speed = 200;
+    float speed = 300;
     float dirX = 0;
     float dirY = 0;
+    boolean isFacingLeftDirection = true;
 
     // A variable for tracking elapsed time for the animation
     float stateTime;
@@ -101,15 +102,24 @@ public class Main implements ApplicationListener {
     }
 
     public void input() {
+        // Gestión dirX
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.LEFT)) {
+            if (!isFacingLeftDirection) {
+                isFacingLeftDirection = true;
+            }
             dirX = -1;
         }
         else if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT)) {
+            if (isFacingLeftDirection) {
+                isFacingLeftDirection = false;
+            }
             dirX = 1;
         }
         else {
             dirX = 0;
         }
+
+        // Gestión dirY
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.UP)) {
             dirY = 1;
         }
@@ -129,15 +139,25 @@ public class Main implements ApplicationListener {
         x += dirX * speed * deltaTime;
         y += dirY * speed * deltaTime;
 
-        // Decidimos animación en función de dirección
-        if (dirX == 0 && dirY == 0) {
+        // Decidimos animación en función de cómo nos movemos
+        if (dirX == 0 && dirY == 0) { // Si estamos quietos...
             currentFrame = idleAnimation.getKeyFrame(stateTime, true);
         }
-        else if (dirY == 1) {
+        else if (dirY == 1) { // Si vamos hacia arriba...
             currentFrame = backAnimation.getKeyFrame(stateTime, true);
         }
         else {
             currentFrame = walkAnimation.getKeyFrame(stateTime, true);
+        }
+
+        // Giramos sprite si hace falta
+        // --> El sprite por defecto mira a la izquierda.
+        // --> Si estamos mirando a la izquierda, NO deberíamos estar girados.
+        if (!isFacingLeftDirection && !currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        }
+        else if (isFacingLeftDirection && currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
         }
     }
 
