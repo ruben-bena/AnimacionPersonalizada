@@ -19,6 +19,7 @@ public class Main implements ApplicationListener {
     Animation<TextureRegion> backAnimation;
     Texture spritesheet;
     SpriteBatch spriteBatch;
+    TextureRegion currentFrame;
     float x = 0;
     float y = 0;
     float speed = 200;
@@ -100,20 +101,23 @@ public class Main implements ApplicationListener {
     }
 
     public void input() {
-        dirX = 0;
-        dirY = 0;
-
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.LEFT)) {
             dirX = -1;
         }
-        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT)) {
+        else if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT)) {
             dirX = 1;
+        }
+        else {
+            dirX = 0;
         }
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.UP)) {
             dirY = 1;
         }
-        if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.DOWN)) {
+        else if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.DOWN)) {
             dirY = -1;
+        }
+        else {
+            dirY = 0;
         }
     }
 
@@ -124,14 +128,23 @@ public class Main implements ApplicationListener {
         // Actualizamos la posición: Posición + (Dirección * Velocidad * Tiempo)
         x += dirX * speed * deltaTime;
         y += dirY * speed * deltaTime;
+
+        // Decidimos animación en función de dirección
+        if (dirX == 0 && dirY == 0) {
+            currentFrame = idleAnimation.getKeyFrame(stateTime, true);
+        }
+        else if (dirY == 1) {
+            currentFrame = backAnimation.getKeyFrame(stateTime, true);
+        }
+        else {
+            currentFrame = walkAnimation.getKeyFrame(stateTime, true);
+        }
     }
 
     public void draw() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear screen
         stateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
 
-        // Get current frame of animation for the current stateTime
-        TextureRegion currentFrame = backAnimation.getKeyFrame(stateTime, true);
         spriteBatch.begin();
         spriteBatch.draw(currentFrame, x, y);
         spriteBatch.end();
