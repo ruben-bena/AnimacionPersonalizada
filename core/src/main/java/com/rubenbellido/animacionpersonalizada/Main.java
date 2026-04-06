@@ -17,9 +17,7 @@ public class Main implements ApplicationListener {
     Animation<TextureRegion> idleAnimation;
     Animation<TextureRegion> walkAnimation;
     Animation<TextureRegion> backAnimation;
-    Texture idleSheet;
-    Texture walkSheet;
-    Texture backSheet;
+    Texture spritesheet;
     SpriteBatch spriteBatch;
 
     // A variable for tracking elapsed time for the animation
@@ -29,29 +27,38 @@ public class Main implements ApplicationListener {
     public void create() {
 
         // Load the sprite sheet as a Texture
-        walkSheet = new Texture(Gdx.files.internal("spritesheet_ruben_fixed.png"));
+        spritesheet = new Texture(Gdx.files.internal("spritesheet_ruben_fixed.png"));
 
         // Use the split utility method to create a 2D array of TextureRegions. This is
         // possible because this sprite sheet contains frames of equal size and they are
         // all aligned.
-        TextureRegion[][] tmp = TextureRegion.split(walkSheet,
-            walkSheet.getWidth() / FRAME_COLS,
-            walkSheet.getHeight() / FRAME_ROWS);
+        TextureRegion[][] tmp = TextureRegion.split(spritesheet,
+            spritesheet.getWidth() / FRAME_COLS,
+            spritesheet.getHeight() / FRAME_ROWS);
 
-        // Place the regions into a 1D array in the correct order, starting from the top
-        // left, going across first. The Animation constructor requires a 1D array.
+        TextureRegion[] idleFrames = new TextureRegion[3];
         TextureRegion[] walkFrames = new TextureRegion[6];
+        TextureRegion[] backFrames = new TextureRegion[3];
         int index = 0;
         for (int i = 0; i < FRAME_ROWS; i++) {
             for (int j = 0; j < FRAME_COLS; j++) {
-                if (j > 2 && j<9) {
-                    walkFrames[index++] = tmp[i][j];
+                if (j<=2) {
+                    idleFrames[index] = tmp[i][j];
                 }
+                else if (j<=8) {
+                    walkFrames[index-3] = tmp[i][j];
+                }
+                else {
+                    backFrames[index-9] = tmp[i][j];
+                }
+                index++;
             }
         }
 
         // Initialize the Animation with the frame interval and array of frames
+        idleAnimation = new Animation<TextureRegion>(0.1f, idleFrames);
         walkAnimation = new Animation<TextureRegion>(0.1f, walkFrames);
+        backAnimation = new Animation<TextureRegion>(0.1f, backFrames);
 
         // Instantiate a SpriteBatch for drawing and reset the elapsed animation
         // time to 0
@@ -70,7 +77,7 @@ public class Main implements ApplicationListener {
         stateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
 
         // Get current frame of animation for the current stateTime
-        TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
+        TextureRegion currentFrame = backAnimation.getKeyFrame(stateTime, true);
         spriteBatch.begin();
         spriteBatch.draw(currentFrame, 50, 50); // Draw current frame at (50, 50)
         spriteBatch.end();
@@ -89,6 +96,6 @@ public class Main implements ApplicationListener {
     @Override
     public void dispose() { // SpriteBatches and Textures must always be disposed
         spriteBatch.dispose();
-        walkSheet.dispose();
+        spritesheet.dispose();
     }
 }
